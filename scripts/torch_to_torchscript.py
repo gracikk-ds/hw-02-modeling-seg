@@ -2,16 +2,15 @@
 import os
 
 import click
+import segmentation_models_pytorch as smp
 import torch
 from omegaconf import DictConfig
 
 from src.settings.config import Config
-from src.utils.load_model import get_model
 
 BATCH_SIZE: int = 1
-SHOTS_SIZE: int = 100
-VIDEO_FEATURES_DIM: int = 768
-AUDIO_FEATURES_DIM: int = 2048
+CHANNELS: int = 100
+IMG_DIM: int = 256
 
 
 def extract_value_from_string(string: str) -> float:
@@ -89,8 +88,8 @@ def load_model_weights(model, checkpoint_path: str):
 
 @click.command()
 @click.option("--config_path", type=str, default="configs/config.yaml")
-@click.option("--checkpoints_path", type=str, default="experiments/")
-@click.option("--output_path", type=str, default="weights/hd_model.pt")
+@click.option("--checkpoints_path", type=str, default="experiments/your_experiment")
+@click.option("--output_path", type=str, default="weights/seg_model.pt")
 def convert_torch_to_scripted(config_path: str, checkpoints_path: str, output_path: str):
     """Convert torch to scripted module.
 
@@ -103,17 +102,22 @@ def convert_torch_to_scripted(config_path: str, checkpoints_path: str, output_pa
         RuntimeError: outputs of torch and compiled models are mismatch.
     """
     config: DictConfig = Config.from_yaml(config_path)
-    model = get_model(config.model)
+    model = smp.create_model(
+        arch=config.model.head_name,
+        encoder_name=config.model.encoder_name,
+        in_channels=config.model.in_channels,
+        classes=config.model.num_classes,
+    )
     model.eval()
     model = load_model_weights(model, checkpoints_path)
-    scripted_model = torch.jit.script(model)  # type: ignore
+    dummy_input = torch.randn(BATCH_SIZE, CHANNELS, IMG_DIM, IMG_DIM)
+    scripted_model = torch.jit.trace(model, dummy_input)  # type: ignore
 
-    video_tensor = torch.randn(BATCH_SIZE, SHOTS_SIZE, VIDEO_FEATURES_DIM)
-    audio_tensor = torch.randn(BATCH_SIZE, SHOTS_SIZE, AUDIO_FEATURES_DIM)
+    check_tensor = torch.randn(BATCH_SIZE, CHANNELS, IMG_DIM, IMG_DIM)
 
     with torch.no_grad():
-        torch_output = model(video_tensor, audio_tensor)
-        scripted_output = scripted_model(video_tensor, audio_tensor)
+        torch_output = model(check_tensor)
+        scripted_output = scripted_model(check_tensor)
 
     if not torch.allclose(torch_output, scripted_output):
         raise RuntimeError("torch_output != scripted_output")
