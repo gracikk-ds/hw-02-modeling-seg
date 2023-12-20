@@ -1,4 +1,4 @@
-"""This module defines the BarcodeDataModule class, which is used to prepare and load data for the BarcodeDataModule dataset."""
+"""This module defines the BarcodeDataModule class, which is used to prepare and load data."""
 
 import os
 from typing import Literal, Type
