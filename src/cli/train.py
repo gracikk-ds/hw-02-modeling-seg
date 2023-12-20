@@ -27,18 +27,12 @@ from clearml import Task
 from dotenv import load_dotenv
 from omegaconf import DictConfig
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import (
-    Callback,
-    EarlyStopping,
-    LearningRateMonitor,
-    ModelCheckpoint,
-    TQDMProgressBar,
-)
+from pytorch_lightning.callbacks import Callback, EarlyStopping, LearningRateMonitor, ModelCheckpoint, TQDMProgressBar
 
-from detector.dataset import HighlightsDataModule
-from detector.lightning_module import HighlightsRunner
-from detector.settings.config import Config
-from detector.utils.reproducibility import git_status
+from src.datamodule import BarcodeDataModule
+from src.lightning_module import BarcodeRunner
+from src.settings.config import Config
+from src.utils.reproducibility import git_status
 
 SEED: int = 157
 PROJECT_PATH: str = os.path.abspath(
@@ -101,9 +95,6 @@ def setup_callback(config: DictConfig) -> List[Callback]:
         patience=config.callbacks.early_stopping_patience,
         mode=config.callbacks.monitor_mode,
     )
-    # TODO: Add StochasticWeightAveraging
-    # TODO: Add LearningRateFinder
-    # TODO: Add BatchSizeFinder
 
     return [checkpoint_callback, early_stopping_callback, lr_monitor_callback, progress_bar]
 
@@ -128,6 +119,7 @@ def hardware_trainer_params(config: DictConfig) -> Dict[str, Any]:
         "num_sanity_val_steps": 5,
         "precision": config.hardware.precision if use_cuda else MAX_PRECISION,
         "callbacks": callbacks,
+        "log_every_n_steps": 1,
     }
 
     if use_cuda and torch.cuda.device_count() > 1 and not isinstance(config.hardware.devices, (int, str)):
@@ -156,8 +148,8 @@ def train(
     # Set reproducibility
     pl.seed_everything(SEED, workers=True)
 
-    datamodule = HighlightsDataModule(config.base_data_settings)
-    model = HighlightsRunner(config)
+    datamodule = BarcodeDataModule(config.base_data_settings, config.transforms_settings)
+    model = BarcodeRunner(config)
 
     if not is_local_run:
         load_dotenv(config.general.dotenv_path)
