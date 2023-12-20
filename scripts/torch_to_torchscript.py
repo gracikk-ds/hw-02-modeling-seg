@@ -88,7 +88,7 @@ def load_model_weights(model, checkpoint_path: str):
 
 @click.command()
 @click.option("--config_path", type=str, default="configs/config.yaml")
-@click.option("--checkpoints_path", type=str, default="experiments/your_experiment")
+@click.option("--checkpoints_path", type=str, default="experiments/")
 @click.option("--output_path", type=str, default="weights/seg_model.pt")
 def convert_torch_to_scripted(config_path: str, checkpoints_path: str, output_path: str):
     """Convert torch to scripted module.
