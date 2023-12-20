@@ -1,24 +1,24 @@
 general:
   project_name: 'BarcodeSegmentation'
   experiment_name: 'first_run'
-  max_steps: 5000
+  max_steps: 200
   dotenv_path: '.env'
 
 hardware:
-  accelerator: 'cpu'
+  accelerator: 'gpu'
   precision: 32
-  devices: "auto"  # [0, 1]
+  devices: [0, 1]
 
 optimizer: 'torch.optim.AdamW'
 optimizer_kwargs:
   lr: 1e-4
-  weight_decay: 1e-5
+  weight_decay: 1e-3
 
 scheduler: 'src.utils.schedulers.CosineAnnealingWarmup'
 scheduler_kwargs:
   min_lr: 1e-6
-  warmup_steps: 500
-  decay_steps: 4500
+  warmup_steps: 20
+  decay_steps: 180
 
 callbacks:
   monitor_metric: 'val_IoU'
@@ -63,5 +63,5 @@ transforms_settings:
 base_data_settings:
   data_path: "data"
   train_size: 0.8
-  batch_size: 64
-  num_workers: 0
+  batch_size: 106
+  num_workers: 10
