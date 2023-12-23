@@ -1,0 +1,8 @@
+clearml==1.12.2
+click==8.1.7
+pydantic==2.1.1
+pydantic-settings==2.0.3
+python-dotenv==1.0.0
+pytorch-lightning[extra]==2.0.8
+torch==2.0.1
+torchvision==0.15.2
