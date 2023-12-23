@@ -7,7 +7,7 @@
 
 # PyTorch Lightning Training
 
-This repository contains a script for training models using PyTorch Lightning. The tool facilitates training by setting up logging, callbacks, and hardware configurations. Additionally, it integrates with ClearML for [experiment](https://app.clear.ml/projects/eead857ec4d54b01a846c5a04ef8b7b6/experiments/2d86bd66838e4e1c967a79ff10b5996a/output/execution) tracking.
+This repository contains a script for training models using PyTorch Lightning. The tool facilitates training by setting up logging, callbacks, and hardware configurations. Additionally, it integrates with ClearML for experiment tracking.
 
 ## Installation
 
