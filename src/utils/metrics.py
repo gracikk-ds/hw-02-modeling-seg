@@ -4,15 +4,15 @@ This module provides functionalities to set up evaluation metrics used in a neur
 Functions:
     get_metrics: Generates a collection of essential evaluation metrics.
 """
-from torchmetrics import MetricCollection, PearsonCorrCoef
-from torchmetrics.retrieval import RetrievalNormalizedDCG
+from torchmetrics import MetricCollection
+from torchmetrics.classification import BinaryF1Score, BinaryJaccardIndex, BinaryPrecision, BinaryRecall
 
 
 def get_metrics(**kwargs) -> MetricCollection:
     """Generate a collection of essential evaluation metrics.
 
-    This function creates a collection of metrics including Pearson, MAE, and nDCG using the provided keyword arguments
-    for their initialization.
+    This function creates a collection of metrics including IoU, Precision, Recall and F1sscore using the provided
+    keyword arguments for their initialization.
 
     Args:
         kwargs: Arbitrary keyword arguments that are forwarded to the initialization of each metric.
@@ -22,8 +22,10 @@ def get_metrics(**kwargs) -> MetricCollection:
     """
     return MetricCollection(
         {
-            "Pearson": PearsonCorrCoef(**kwargs),
-            "nDCG@100": RetrievalNormalizedDCG(top_k=100, **kwargs),
-            "nDCG@1000": RetrievalNormalizedDCG(top_k=1000, **kwargs),
+            "IoU": BinaryJaccardIndex(**kwargs),
+            "BinaryPrecision": BinaryPrecision(**kwargs),
+            "BinaryRecall": BinaryRecall(**kwargs),
+            "BinaryF1": BinaryF1Score(**kwargs),
+            # TODO: Add detection metrics, count the number of recognized objects.
         },
     )

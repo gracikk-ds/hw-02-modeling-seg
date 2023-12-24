@@ -1,7 +1,7 @@
 general:
   project_name: 'BarcodeSegmentation'
   experiment_name: 'first_run'
-  max_steps: 5000
+  max_steps: 200
   dotenv_path: '.env'
 
 hardware:
@@ -12,38 +12,56 @@ hardware:
 optimizer: 'torch.optim.AdamW'
 optimizer_kwargs:
   lr: 1e-4
-  weight_decay: 1e-5
+  weight_decay: 1e-3
 
-scheduler: 'detector.utils.schedulers.CosineAnnealingWarmup'
+scheduler: 'src.utils.schedulers.CosineAnnealingWarmup'
 scheduler_kwargs:
   min_lr: 1e-6
-  warmup_steps: 500
-  decay_steps: 4500
+  warmup_steps: 20
+  decay_steps: 180
 
 callbacks:
-  monitor_metric: 'val_TopKNormalizedOverlap@50'
+  monitor_metric: 'val_IoU'
   monitor_mode: 'max'
   early_stopping_patience: 10
   progress_bar_refresh_rate: 10
 
 model:
-  video_pos_encoder: 'detector.models.blocks.transformer_blocks.PositionalEncoding'
-  video_pos_encoder_kwargs:
-    dim: 768
-    dropout: 0.1
+  head_name: "fpn"
+  encoder_name: "resnet34"
+  in_channels: 3
+  num_classes: 2
 
 losses:
   -
-    name: "SegLoss"
-    loss_weight: 2
-    loss_fn: "src.models.losses.classification.WeightedCrossEntropyLoss"
+    name: "SegmentationLoss"
+    loss_weight: 1
+    loss_fn: "kornia.losses.DiceLoss"
     loss_kwargs:
+      average: "micro"
+  -
+    name: "ClassificationLoss"
+    loss_weight: 1
+    loss_fn: "kornia.losses.FocalLoss"
+    loss_kwargs:
+      alpha: 0.25
+      gamma: 2.0
       reduction: "mean"
 
+transforms_settings:
+  max_size: 256
+  preprocessing: True
+  augmentations: True
+  flip_probability: 0.5
+  brightness_limit: 0.2
+  contrast_limit: 0.2
+  hue_shift_limit: 20
+  sat_shift_limit: 30
+  val_shift_limit: 20
+  blur_probability: 0.5
 
 base_data_settings:
-  img_train: "data/films_features/video"
-  annotation_train: "data/films_features/audio"
-  batch_size: 6
-  max_len:
+  data_path: "data"
+  train_size: 0.8
+  batch_size: 106
   num_workers: 10

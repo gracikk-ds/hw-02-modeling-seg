@@ -21,13 +21,15 @@ def get_transforms(cfg: DictConfig) -> TransformType:
     """
     preprocessing = cfg.preprocessing
     augmentations = cfg.augmentations
-    postprocessing = cfg.postprocessing
 
     transforms = []
 
     if preprocessing:
-        transforms.append(
-            albu.Resize(height=cfg.height, width=cfg.width),
+        transforms.extend(
+            [
+                albu.LongestMaxSize(max_size=cfg.max_size, always_apply=True, p=1.0),
+                albu.PadIfNeeded(min_height=cfg.max_size, min_width=cfg.max_size, always_apply=True, p=1),
+            ],
         )
 
     if augmentations:
@@ -49,7 +51,6 @@ def get_transforms(cfg: DictConfig) -> TransformType:
             ],
         )
 
-    if postprocessing:
-        transforms.extend([albu.Normalize(), ToTensorV2()])
+    transforms.extend([albu.Normalize(), ToTensorV2()])
 
     return albu.Compose(transforms)

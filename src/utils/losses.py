@@ -10,8 +10,8 @@ from typing import Dict, List
 from pydantic import BaseModel, ConfigDict
 from torch import nn
 
-from detector.settings.config import LossConfig
-from detector.utils.general import load_object
+from src.settings.config import LossConfig
+from src.utils.general import load_object
 
 
 class LossObj(BaseModel):
